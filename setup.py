@@ -7,11 +7,11 @@ def input_error(func):
         try:
             return func(*args, **kwargs)
         except KeyError:
-            return "Enter user name"
-        except ValueError:
-            return "Give me name and phone please"
-        except IndexError:
             return "Contact not found"
+        except ValueError:
+            return "Invalid input. Please provide the correct format."
+        except IndexError:
+            return "Invalid command. Please try again."
     return wrapper
 
 @input_error
@@ -20,17 +20,21 @@ def hello():
 
 @input_error
 def add_contact(name, phone):
+    if name in contacts:
+        raise ValueError("Contact already exists.")
     contacts[name] = phone
     return f"Contact {name} added successfully."
 
 @input_error
 def change_phone(name, new_phone):
+    if name not in contacts:
+        raise KeyError("Contact not found.")
     contacts[name] = new_phone
     return f"Phone number for {name} updated successfully."
 
 @input_error
 def get_phone(name):
-    return f"The phone number for {name} is {contacts[name]}."
+    return f"The phone number for {name} is {contacts.get(name, 'not found')}."
 
 @input_error
 def show_all():
@@ -55,24 +59,24 @@ def main():
 
         elif user_input.startswith("add"):
             try:
-                _, name, phone = re.split(r'\s+', user_input, 2)
+                _, name, phone = user_input.split(maxsplit=2)
                 print(add_contact(name, phone))
-            except ValueError:
-                print("Give me name and phone please")
+            except ValueError as e:
+                print(e)
 
         elif user_input.startswith("change"):
             try:
-                _, name, new_phone = re.split(r'\s+', user_input, 2)
+                _, name, new_phone = user_input.split(maxsplit=2)
                 print(change_phone(name, new_phone))
-            except ValueError:
-                print("Give me name and new phone please")
+            except ValueError as e:
+                print(e)
 
         elif user_input.startswith("phone"):
             try:
-                _, name = re.split(r'\s+', user_input, 1)
+                _, name = user_input.split(maxsplit=1)
                 print(get_phone(name))
-            except ValueError:
-                print("Give me name please")
+            except ValueError as e:
+                print(e)
 
         elif user_input == "show all":
             print(show_all())
@@ -82,4 +86,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
