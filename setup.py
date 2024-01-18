@@ -8,8 +8,8 @@ def input_error(func):
             return func(*args, **kwargs)
         except KeyError:
             return "Contact not found"
-        except ValueError:
-            return "Invalid input. Please provide the correct format."
+        except ValueError as e:
+            return str(e)
         except IndexError:
             return "Invalid command. Please try again."
     return wrapper
@@ -58,25 +58,22 @@ def main():
             print(hello())
 
         elif user_input.startswith("add"):
-            try:
-                _, name, phone = user_input.split(maxsplit=2)
-                print(add_contact(name, phone))
-            except ValueError as e:
-                print(e)
+            
+            _, name, phone = user_input.split(maxsplit=2)
+            print(add_contact(name, phone))
+            
 
         elif user_input.startswith("change"):
-            try:
-                _, name, new_phone = user_input.split(maxsplit=2)
-                print(change_phone(name, new_phone))
-            except ValueError as e:
-                print(e)
+            
+            _, name, new_phone = user_input.split(maxsplit=2)
+            print(change_phone(name, new_phone))
+            
 
         elif user_input.startswith("phone"):
-            try:
-                _, name = user_input.split(maxsplit=1)
-                print(get_phone(name))
-            except ValueError as e:
-                print(e)
+            
+            _, name = user_input.split(maxsplit=1)
+            print(get_phone(name))
+            
 
         elif user_input == "show all":
             print(show_all())
