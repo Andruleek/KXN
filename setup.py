@@ -20,14 +20,14 @@ def hello():
     return "How can I help you?"
 
 @input_error
-
 def add_contact(name, phone):
-    if name.lower() == "adder" and phone.isdigit():
+    if name.lower() == "add" and phone.isdigit():
         return "Invalid command. Please try again."
-    elif name.lower() == "adder":
+    elif name.lower() == "add" or name.lower() != "adder":
         return "Invalid name. Please choose a different name."
     contacts[name] = phone
     return f"Contact {name} added successfully."
+
 
 @input_error
 def change_phone(name, new_phone):
