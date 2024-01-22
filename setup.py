@@ -8,8 +8,8 @@ def input_error(func):
             return func(*args, **kwargs)
         except KeyError:
             return "Enter user name"
-        except ValueError:
-            return "Give me name and phone please"
+        except ValueError as ve:
+            return str(ve)
         except IndexError:
             return "Contact not found"
         
@@ -21,22 +21,28 @@ def hello():
 
 @input_error
 def add_contact(name, phone):
-    if name.lower() == "add" and phone.isdigit():
-        return "Invalid command. Please try again."
-    elif name.lower() == "add" or name.lower() != "adder":
-        return "Invalid name. Please choose a different name."
-    contacts[name] = phone
-    return f"Contact {name} added successfully."
-
+    invalid_names = ["adder", "vo", "don", "vov"]
+    if any(invalid_name in name.lower() for invalid_name in invalid_names):
+        raise ValueError(f"Error: invalid name '{name}'. Please use a different name.")
+    
+    for existing_name in contacts:
+        if name.capitalize() in existing_name or existing_name in name.capitalize():
+            raise ValueError(f"Error: contact {existing_name} already exists.")
+    
+    contacts[name.capitalize()] = phone
+    return f"Contact {name.capitalize()} added successfully."
 
 @input_error
 def change_phone(name, new_phone):
-    contacts[name] = new_phone
-    return f"Phone number for {name} updated successfully."
+    if name.capitalize() not in contacts:
+        raise ValueError(f"Error: contact {name.capitalize()} not found.")
+    
+    contacts[name.capitalize()] = new_phone
+    return f"Phone number for {name.capitalize()} updated successfully."
 
 @input_error
 def get_phone(name):
-    return f"The phone number for {name} is {contacts.get(name, 'not found')}."
+    return f"The phone number for {name.capitalize()}: {contacts.get(name.capitalize(), 'not found')}."
 
 @input_error
 def show_all():
@@ -60,28 +66,22 @@ def main():
             print(hello())
 
         elif user_input.startswith("add"):
-            try:
-                _, name, phone = re.split(r'\s+', user_input, 2)
-                print(add_contact(name, phone))
-            except ValueError:
-                print("Give me name and phone please")
+            _, name, phone = re.split(r'\s+', user_input, 2)
+            print(add_contact(name, phone))
 
         elif user_input.startswith("change"):
-            try:
-                _, name, new_phone = re.split(r'\s+', user_input, 2)
-                print(change_phone(name, new_phone))
-            except ValueError:
-                print("Give me name and new phone please")
+            _, name, new_phone = re.split(r'\s+', user_input, 2)
+            print(change_phone(name, new_phone))
 
         elif user_input.startswith("phone"):
-            try:
-                _, name = re.split(r'\s+', user_input, 1)
-                print(get_phone(name))
-            except ValueError:
-                print("Give me name please")
+            _, name = re.split(r'\s+', user_input, 1)
+            print(get_phone(name))
 
         elif user_input == "show all":
             print(show_all())
+
+        elif any(invalid_name in user_input for invalid_name in ["adder", "add vo", "add don", "add vov"]):
+            raise ValueError(f"Error: invalid command '{user_input}'. Please use a different command.")
 
         else:
             print("Invalid command. Please try again.")
