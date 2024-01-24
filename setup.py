@@ -1,90 +1,75 @@
-import re
+from collections import UserDict
 
-contacts = {}
+class ContactBook(UserDict):
+    def __init__(self):
+        super().__init__()
 
-def input_error(func):
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except KeyError:
-            return "Enter user name"
-        except ValueError as ve:
-            return str(ve)
-        except IndexError:
-            return "Contact not found"
-        
-    return wrapper
+    def input_error(func):
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except ValueError as e:
+                return f"Error: {str(e)}"
 
-@input_error
-def hello():
-    return "How can I help you?"
+        return wrapper
 
-@input_error
-def add_contact(name, phone):
-    invalid_names = ["adder", "vo", "don", "vov"]
-    if any(invalid_name in name.lower() for invalid_name in invalid_names):
-        raise ValueError(f"Error: invalid name '{name}'. Please use a different name.")
-    
-    for existing_name in contacts:
-        if name.capitalize() in existing_name or existing_name in name.capitalize():
-            raise ValueError(f"Error: contact {existing_name} already exists.")
-    
-    contacts[name.capitalize()] = phone
-    return f"Contact {name.capitalize()} added successfully."
-
-@input_error
-def change_phone(name, new_phone):
-    if name.capitalize() not in contacts:
-        raise ValueError(f"Error: contact {name.capitalize()} not found.")
-    
-    contacts[name.capitalize()] = new_phone
-    return f"Phone number for {name.capitalize()} updated successfully."
-
-@input_error
-def get_phone(name):
-    return f"The phone number for {name.capitalize()}: {contacts.get(name.capitalize(), 'not found')}."
-
-@input_error
-def show_all():
-    if not contacts:
-        return "No contacts found."
-    else:
-        result = "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
-        return result
-
-def main():
-    print("Welcome to the Console Assistant!")
-
-    while True:
-        user_input = input("Enter your command: ").lower()
-
-        if user_input in ["good bye", "exit", "close"]:
-            print("Good bye!")
-            break
-
-        elif user_input == "hello":
-            print(hello())
-
-        elif user_input.startswith("add"):
-            _, name, phone = re.split(r'\s+', user_input, 2)
-            print(add_contact(name, phone))
-
-        elif user_input.startswith("change"):
-            _, name, new_phone = re.split(r'\s+', user_input, 2)
-            print(change_phone(name, new_phone))
-
-        elif user_input.startswith("phone"):
-            _, name = re.split(r'\s+', user_input, 1)
-            print(get_phone(name))
-
-        elif user_input == "show all":
-            print(show_all())
-
-        elif any(invalid_name in user_input for invalid_name in ["adder", "add vo", "add don", "add vov"]):
-            raise ValueError(f"Error: invalid command '{user_input}'. Please use a different command.")
-
+    @input_error
+    def add_contact(self, name, phone):
+        if name.isalpha() and phone.isdigit() and len(phone) == 10:
+            self.data[name] = phone
+            return f"Contact {name} added successfully."
         else:
-            print("Invalid command. Please try again.")
+            raise ValueError("Invalid name or phone number.")
+
+    @input_error
+    def change_contact(self, name, new_phone):
+        if name in self.data and new_phone.isdigit() and len(new_phone) == 10:
+            self.data[name] = new_phone
+            return f"Phone number for {name} changed successfully."
+        else:
+            raise ValueError("Invalid name or phone number.")
+
+    @input_error
+    def show_phone(self, name):
+        if name in self.data:
+            return f"The phone number for {name} is {self.data[name]}."
+        else:
+            raise ValueError(f"Contact {name} not found.")
+
+    def show_all(self):
+        if not self.data:
+            return "No contacts found."
+        else:
+            return "\n".join([f"{name}: {phone}" for name, phone in self.data.items()])
+
+    def exit_program(self):
+        return "Good bye!"
+
+    def main(self):
+        while True:
+            command = input("Enter your command: ").lower()
+            if command in ["good bye", "close", "exit"]:
+                print(self.exit_program())
+                break
+            elif command.startswith("add "):
+                _, name, *phone = command.split()
+                phone = "".join(phone)
+                print(self.add_contact(name, phone))
+            elif command.startswith("change "):
+                _, name, *new_phone = command.split()
+                new_phone = "".join(new_phone)
+                print(self.change_contact(name, new_phone))
+            elif command.startswith("phone "):
+                _, name = command.split()
+                print(self.show_phone(name))
+            elif command == "show all":
+                print(self.show_all())
+            elif command == "hello":
+                print("How can I help you?")
+            else:
+                print("Invalid command. Please try again.")
+
 
 if __name__ == "__main__":
-    main()
+    contact_book = ContactBook()
+    contact_book.main()
